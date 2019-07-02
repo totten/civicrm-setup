@@ -20,45 +20,45 @@ if (!defined('CIVI_SETUP')) {
     $e->setAuthorized(\Drupal::currentUser()->hasPermission('administer modules'));
   });
 
-  \Civi\Setup::dispatcher()
-    ->addListener('civi.setup.init', function (\Civi\Setup\Event\InitEvent $e) {
-      $model = $e->getModel();
-      if ($model->cms !== 'Drupal8' || !is_callable(['Drupal', 'currentUser'])) {
-        return;
-      }
-      \Civi\Setup::log()->info(sprintf('[%s] Handle %s', basename(__FILE__), 'init'));
+\Civi\Setup::dispatcher()
+  ->addListener('civi.setup.init', function (\Civi\Setup\Event\InitEvent $e) {
+    $model = $e->getModel();
+    if ($model->cms !== 'Drupal8' || !is_callable(['Drupal', 'currentUser'])) {
+      return;
+    }
+    \Civi\Setup::log()->info(sprintf('[%s] Handle %s', basename(__FILE__), 'init'));
 
-      $model->settingsPath = implode(DIRECTORY_SEPARATOR,
-        [\Drupal::root(), \Drupal::service('kernel')->getSitePath(), 'civicrm.settings.php']);
+    $model->settingsPath = implode(DIRECTORY_SEPARATOR,
+      [\Drupal::root(), \Drupal::service('kernel')->getSitePath(), 'civicrm.settings.php']);
 
-      if (($loadGenerated = \Drupal\Core\Site\Settings::get('civicrm_load_generated', NULL)) !== NULL) {
-        $model->loadGenerated = $loadGenerated;
-      }
+    if (($loadGenerated = \Drupal\Core\Site\Settings::get('civicrm_load_generated', NULL)) !== NULL) {
+      $model->loadGenerated = $loadGenerated;
+    }
 
-      // Compute DSN.
-      $connectionOptions = \Drupal::database()->getConnectionOptions();
-      $model->db = $model->cmsDb = array(
-        'server' => \Civi\Setup\DbUtil::encodeHostPort($connectionOptions['host'], $connectionOptions['port'] ?: NULL),
-        'username' => $connectionOptions['username'],
-        'password' => $connectionOptions['password'],
-        'database' => $connectionOptions['database'],
-      );
+    // Compute DSN.
+    $connectionOptions = \Drupal::database()->getConnectionOptions();
+    $model->db = $model->cmsDb = array(
+      'server' => \Civi\Setup\DbUtil::encodeHostPort($connectionOptions['host'], $connectionOptions['port'] ?: NULL),
+      'username' => $connectionOptions['username'],
+      'password' => $connectionOptions['password'],
+      'database' => $connectionOptions['database'],
+    );
 
-      // Compute cmsBaseUrl.
-      global $base_url, $base_path;
-      $model->cmsBaseUrl = $base_url . $base_path;
+    // Compute cmsBaseUrl.
+    global $base_url, $base_path;
+    $model->cmsBaseUrl = $base_url . $base_path;
 
-      // Compute general paths
-      $model->paths['civicrm.files']['url'] = implode(DIRECTORY_SEPARATOR, [$base_url, \Drupal\Core\StreamWrapper\PublicStream::basePath(), 'civicrm']);
-      $model->paths['civicrm.files']['path'] = implode(DIRECTORY_SEPARATOR, [_drupal8_civisetup_getPublicFiles(), 'civicrm']);
+    // Compute general paths
+    $model->paths['civicrm.files']['url'] = implode(DIRECTORY_SEPARATOR, [$base_url, \Drupal\Core\StreamWrapper\PublicStream::basePath(), 'civicrm']);
+    $model->paths['civicrm.files']['path'] = implode(DIRECTORY_SEPARATOR, [_drupal8_civisetup_getPublicFiles(), 'civicrm']);
 
-      // Compute templateCompileDir.
-      $model->templateCompilePath = implode(DIRECTORY_SEPARATOR, [_drupal8_civisetup_getPrivateFiles(), 'civicrm', 'templates_c']);
+    // Compute templateCompileDir.
+    $model->templateCompilePath = implode(DIRECTORY_SEPARATOR, [_drupal8_civisetup_getPrivateFiles(), 'civicrm', 'templates_c']);
 
-      // Compute default locale.
-      $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
-      $model->lang = \Civi\Setup\LocaleUtil::pickClosest($langcode, $model->getField('lang', 'options'));
-    });
+    // Compute default locale.
+    $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
+    $model->lang = \Civi\Setup\LocaleUtil::pickClosest($langcode, $model->getField('lang', 'options'));
+  });
 
 function _drupal8_civisetup_getPublicFiles() {
   $filePublicPath = realpath(\Drupal\Core\StreamWrapper\PublicStream::basePath());
